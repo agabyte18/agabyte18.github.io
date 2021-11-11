@@ -1,0 +1,19 @@
+
+[ol8_baseos_latest]
+name=Oracle Linux 8 BaseOS Latest ($basearch)
+baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/$basearch/
+gpgcheck=0
+enabled=1
+
+[ol8_appstream]
+name=Oracle Linux 8 Application Stream ($basearch)
+baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/$basearch/
+gpgcheck=0
+enabled=1
+
+[ol8_developer_EPEL]
+name=Oracle Linux $releasever EPEL Packages for Development ($basearch)
+baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/developer/EPEL/$basearch/
+gpgcheck=0
+enabled=1
+
