@@ -1,0 +1,17 @@
+# /u01/app/oracle/product/19.3.0/db1/network/admin/listener.ora
+SID_LIST_LISTENER = 
+  (SID_LIST = 
+    (SID_DESC = 
+      (GLOBAL_DBNAME = testdb ) 
+      (ORACLE_HOME = /u01/app/oracle/product/19.3.0/db1) 
+      (SID_NAME = testdb) 
+    ) 
+  )
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = s01)(PORT = 1521))
+      (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521))
+    )
+  )
+
