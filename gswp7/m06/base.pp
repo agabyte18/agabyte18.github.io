@@ -2,12 +2,10 @@ class pasture::base {
 
   package { 'gem':
     ensure => present,
-    before => [Package['cowsay'],Package['thin']],
   }
 
   package { 'epel-release':
     ensure => present,
-    before => Package['rubygem-thin'],
   }
 
   package { 'ruby-devel':
