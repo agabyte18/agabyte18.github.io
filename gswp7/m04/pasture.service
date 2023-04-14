@@ -1,0 +1,11 @@
+# /etc/systemd/system/pasture.service
+
+[Unit]
+Description=Run the pasture service
+
+[Service]
+Environment=RACK_ENV=production
+ExecStart=/usr/local/bin/pasture start --config_file /etc/pasture_config.yaml
+
+[Install]
+WantedBy=multi-user.target
