@@ -1,4 +1,5 @@
 class profile::pasture::app {
+
   $host_name = $facts['fqdn']
   $message   = "Welcome to ${host_name}."
 
