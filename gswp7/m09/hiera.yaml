@@ -1,0 +1,16 @@
+---
+version: 5
+
+defaults:
+  datadir: data
+  data_hash: yaml_data
+
+hierarchy:
+  - name: "Per-node Data"
+    path: "node/%{facts.networking.hostname}.yaml"
+
+  - name: "Per-domain Data"
+    path: "domain/%{facts.networking.domain}.yaml"
+
+  - name: "Generic Data"
+    path: "common.yaml"
