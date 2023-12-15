@@ -9,7 +9,8 @@ create table customers (
   id int not null,
   name varchar(10),
   bal int,
-  loc char(3)
+  loc char(3),
+  primary key (id)
 );
 
 insert into customers values (1, 'Kate', 100, 'CA');
@@ -23,7 +24,8 @@ insert into customers values (7, 'Aika', 700, 'JP');
 create table branches (
   id int not null,
   name varchar(20),
-  code char(3)
+  code char(3),
+  primary key (id)
 );
 
 insert into branches values (1, 'Canada', 'CA');
