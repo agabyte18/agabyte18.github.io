@@ -33,5 +33,5 @@ insert into branches values (2, 'United Kingdom', 'UK');
 insert into branches values (3, 'France', 'FR');
 insert into branches values (4, 'Italy', 'IT');
 insert into branches values (5, 'USA', 'US');
-insert into branches values (6, 'Germany', 'DE');
+insert into branches values (6, 'Germany', 'GE');
 insert into branches values (7, 'Japan', 'JP');
