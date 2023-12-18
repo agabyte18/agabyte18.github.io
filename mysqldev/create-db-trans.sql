@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS dwm_crm;
-CREATE DATABASE dwm_crm; 
-USE dwm_crm;
+DROP DATABASE IF EXISTS dwm_trans;
+CREATE DATABASE dwm_trans; 
+USE dwm_trans;
 
 SET NAMES utf8mb4 ;
 SET character_set_client = utf8mb4 ;
