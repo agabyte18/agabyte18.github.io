@@ -7,18 +7,18 @@ SET character_set_client = utf8mb4 ;
 
 
 CREATE TABLE emps (
-  employee_id int NOT NULL AUTO_INCREMENT,
+  id int NOT NULL AUTO_INCREMENT,
   first_name varchar(30),
   last_name varchar(30) NOT NULL,
   email varchar(30) NOT NULL,
   phone varchar(20),
   hire_date date not null,
-  job_id varchar(10) not null,
-  salary decimal(8,2),
+  job varchar(10) not null,
+  sal decimal(8,2),
   commission_pct decimal(2,2),
-  manager_id int,
-  department_id int,
-  PRIMARY KEY (employee_id)
+  manager int,
+  department int,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
   INSERT INTO emps VALUES
