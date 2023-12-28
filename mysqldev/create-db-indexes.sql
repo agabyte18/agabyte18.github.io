@@ -16,8 +16,8 @@ CREATE TABLE emps (
   job varchar(10) not null,
   sal decimal(8,2),
   commission_pct decimal(2,2),
-  manager int,
-  department int,
+  mgr int,
+  dept int,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
