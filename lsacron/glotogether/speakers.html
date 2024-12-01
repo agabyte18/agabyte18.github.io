@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GloboEvents Speaker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+  --color-primary: #ff7b54;
+  --color-text-on-primary: #fff;
+  --color-text-on-secondary: #333;
+  --color-button-border: var(--color-text-on-primary);
+  --color-button-primary-bg: var(--color-text-on-primary);
+  --color-button-primary-text: var(--color-primary);
+  --color-button-secondary-bg: var(--color-primary);
+  --color-button-secondary-text: var(--color-text-on-primary);
+  --font-primary: "Familjen Grotesk", sans-serif;
+  --font-secondary: "Gochi Hand", cursive;
+}
+
+body {
+  font-family: var(--font-primary);
+  margin-bottom: 5rem;
+}
+
+.body--primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.body--secondary {
+  background-color: var(--color-text-on-primary);
+  color: var(--color-primary);
+}
+
+.main--speakers {
+  padding: 2rem 10rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  font-family: var(--font-secondary);
+}
+
+header {
+  display: grid;
+  grid-template-columns: 1fr 3fr 34px;
+  grid-template-rows: 1fr;
+  grid-template-areas: "logo nav cart";
+  align-items: center;
+  padding: 0 10rem;
+}
+
+header > a {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+nav {
+  justify-self: end;
+}
+
+nav > ul {
+  list-style: none;
+  display: flex;
+}
+
+nav ul li {
+  margin-inline-end: 36px;
+  font-size: 20px;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+button {
+  font-size: 2rem;
+  padding: 0 4rem;
+  height: 4rem;
+  border: 4px solid var(--color-button-border);
+  cursor: pointer;
+  transition: outline 0.2s linear;
+}
+
+button:focus,
+button:hover {
+  outline: 3px solid var(--color-text-on-primary);
+}
+
+.button--primary {
+  background-color: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
+}
+
+.button--secondary {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.button-container {
+  display: flex;
+}
+
+.button--primary > img {
+  vertical-align: middle;
+}
+
+.cart-icon--primary g path {
+  fill: var(--color-primary);
+}
+
+.speakers .main__title {
+  font-size: 6rem;
+}
+
+.speakers__wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 2rem;
+  row-gap: 6rem;
+}
+
+.speaker__wrapper {
+  max-width: 28rem;
+}
+
+.speaker__photo {
+  width: 20rem;
+  height: 20rem;
+  object-fit: cover;
+  margin-bottom: 0.8rem;
+  border-radius: 0.4rem;
+}
+
+.speaker__name {
+  font-size: 2.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.speaker__company {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #e3ba8f;
+  font-family: var(--font-secondary);
+}
+
+.speaker__bio {
+  font-size: 1.6rem;
+  color: var(--color-text-on-secondary);
+}
+
+.opt {
+  object-position: top;
+}
+
+    </style>
+  </head>
+
+  <body class="body--secondary speakers">
+    <header>
+      <a href="/">GloboEvents</a>
+
+      <nav>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="speakers.html">Speakers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+
+      <svg
+        class="cart-icon--primary"
+        width="34"
+        height="30"
+        viewBox="0 0 34 30"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g clip-path="url(#clip0_5_286)">
+          <path
+            d="M0 1.40625C0 0.626953 0.631597 0 1.41667 0H4.10243C5.40104 0 6.55208 0.75 7.08924 1.875H31.3497C32.9021 1.875 34.0354 3.33984 33.6281 4.82813L31.208 13.752C30.7062 15.5918 29.024 16.875 27.1056 16.875H10.076L10.3948 18.5449C10.5247 19.207 11.109 19.6875 11.7878 19.6875H28.8056C29.5906 19.6875 30.2222 20.3145 30.2222 21.0938C30.2222 21.873 29.5906 22.5 28.8056 22.5H11.7878C9.74549 22.5 7.99236 21.0586 7.61458 19.0723L4.56875 3.19336C4.52743 2.9707 4.33264 2.8125 4.10243 2.8125H1.41667C0.631597 2.8125 0 2.18555 0 1.40625ZM7.55556 27.1875C7.55556 26.8182 7.62884 26.4524 7.77123 26.1112C7.91362 25.77 8.12232 25.4599 8.38542 25.1988C8.64852 24.9376 8.96086 24.7304 9.30462 24.5891C9.64837 24.4477 10.0168 24.375 10.3889 24.375C10.761 24.375 11.1294 24.4477 11.4732 24.5891C11.8169 24.7304 12.1293 24.9376 12.3924 25.1988C12.6555 25.4599 12.8642 25.77 13.0065 26.1112C13.1489 26.4524 13.2222 26.8182 13.2222 27.1875C13.2222 27.5568 13.1489 27.9226 13.0065 28.2638C12.8642 28.605 12.6555 28.9151 12.3924 29.1762C12.1293 29.4374 11.8169 29.6446 11.4732 29.7859C11.1294 29.9273 10.761 30 10.3889 30C10.0168 30 9.64837 29.9273 9.30462 29.7859C8.96086 29.6446 8.64852 29.4374 8.38542 29.1762C8.12232 28.9151 7.91362 28.605 7.77123 28.2638C7.62884 27.9226 7.55556 27.5568 7.55556 27.1875ZM27.3889 24.375C28.1403 24.375 28.861 24.6713 29.3924 25.1988C29.9237 25.7262 30.2222 26.4416 30.2222 27.1875C30.2222 27.9334 29.9237 28.6488 29.3924 29.1762C28.861 29.7037 28.1403 30 27.3889 30C26.6374 30 25.9168 29.7037 25.3854 29.1762C24.8541 28.6488 24.5556 27.9334 24.5556 27.1875C24.5556 26.4416 24.8541 25.7262 25.3854 25.1988C25.9168 24.6713 26.6374 24.375 27.3889 24.375Z"
+            fill="white"
+          />
+        </g>
+        <defs>
+          <clipPath id="clip0_5_286">
+            <rect width="34" height="30" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
+    </header>
+
+    <main class="main--speakers">
+      <h1 class="main__title">Speakers.</h1>
+
+      <div class="speakers__wrapper">
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo"
+            src="/images/pexels-olly-774909.jpg"
+            alt="Smiling young woman in collared shirt"
+          />
+          <h2 class="speaker__name">Andrea Piacquadio</h2>
+          <p class="speaker__company">Nion</p>
+          <p class="speaker__bio">
+            Andrea currently serves as a staff product manager at Nion, bringing her robust experience in Rust engineering to the product.
+          </p>
+        </div>
+
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo"
+            src="/images/pexels-stefanstefancik-91227.jpg"
+            alt="Smiling young man in gray shirt"
+          />
+          <h2 class="speaker__name">Stefan Stefancik</h2>
+          <p class="speaker__company">CanAcademy</p>
+          <p class="speaker__bio">
+            Stefan has taught HTML and CSS to all skill levels for over 20 years.
+            He was previously a Lecturer at Princeton.
+            He is also a freelance web designer.
+          </p>
+        </div>
+
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo opt"
+            src="/images/pexels-moose-photos-170195-1587009.jpg"
+            alt="Smiling young woman in black sweater"
+          />
+          <h2 class="speaker__name">Phoebe Moose</h2>
+          <p class="speaker__company">Javatar</p>
+          <p class="speaker__bio">
+            Phoebe is the Founder of Javatar Software.
+            As an Oracle certified master, she's spoken
+            at numerous conferences around the world
+            on topics like programming, databases, and startups.
+          </p>
+        </div>
+
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo"
+            src="/images/pexels-justin-shaifer-501272-1222271.jpg"
+            alt="Smiling young man in green shirt"
+          />
+          <h2 class="speaker__name">Justin Shaifer</h2>
+          <p class="speaker__company">Permanence</p>
+          <p class="speaker__bio">
+            Justin is the senior front-end architect at Permanence.
+            He is also the director emeritus and founder of the front-end engineering
+            program at the Geering School for Software and Design in Denver, Colorado.
+          </p>
+        </div>
+
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo"
+            src="/images/pexels-hannah-nelson-390257-1065084.jpg"
+            alt="Smiling young woman in green shirt"
+          />
+          <h2 class="speaker__name">Hannah Nelson</h2>
+          <p class="speaker__company">Muggle</p>
+          <p class="speaker__bio">
+            Hannah is an award-winning Speaker,
+            Director of Engineering for Core Developer Web at Muggle,
+            Vue core team member, and Staff Writer at Pluralsight.
+          </p>
+        </div>
+
+        <div class="speaker__wrapper">
+          <img
+            class="speaker__photo"
+            src="/images/pexels-simon-robben-55958-614810.jpg"
+            alt="Serious man in brown polo shirt"
+          />
+          <h2 class="speaker__name">Simon Robben</h2>
+          <p class="speaker__company">Staffable</p>
+          <p class="speaker__bio">
+            Simon is an American Software Engineer at Staffable in Copenhagen, Denmark. 
+            He is an instructor at Pluralsight and Agabyte, 
+            co-host of the .Netbug Podcast, and panelist on .NetParty.
+          </p>
+        </div>
+      </div>
+      <!-- speakers__wrapper -->
+    </main>
+  </body>
+</html>
