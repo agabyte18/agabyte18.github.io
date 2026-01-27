@@ -1,0 +1,18 @@
+[Unit]
+Description=trackr
+
+[Service]
+Type=simple
+User=root
+Group=root
+Restart=always
+RestartSec=5s
+StandardOutput=append:/var/log/trackr
+StandardOutput=append:/var/log/trackr
+WorkingDirectory=/root/trackr
+ExecStart=/bin/bash -c "source /root/.nvm/nvm.sh && npm start"
+
+[Install]
+WantedBy=multi-user.target
+
+
