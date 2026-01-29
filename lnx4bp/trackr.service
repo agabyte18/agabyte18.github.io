@@ -8,7 +8,7 @@ Group=root
 Restart=always
 RestartSec=5s
 StandardOutput=append:/var/log/trackr
-StandardOutput=append:/var/log/trackr
+StandardError=append:/var/log/trackr
 WorkingDirectory=/root/trackr
 ExecStart=/bin/bash -c "source /root/.nvm/nvm.sh && npm ci && npx prisma migrate deploy && npx prisma generate && npm run build && npm start"
 
