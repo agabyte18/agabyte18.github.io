@@ -1,6 +1,6 @@
 # Objective: Restore a Logical Backup and Verify the Recovery Point
 
-In this objective, you will take a logical backup of a single table with `mysqldump`, keep writing to it, and then accidentally drop it. The backup alone would cost you every row written after it, the same gap you saw in the previous objective. So you'll restore the backup and then replay the server's binary log right up to the moment before the mistake. This is called point-in-time recovery. Follow each step in order. Each step gives you exactly one command to run.
+In this objective, you will take a logical backup of a single table with `mysqldump`, keep writing to it, and then accidentally drop it. The backup alone would cost you every row written after it, the same gap you saw in the previous objective. So you'll restore the backup and then replay the server's binary log right up to the moment before the mistake. This is called point-in-time recovery. Follow each step in order. Most of the steps give you a single command to run.
 
 1. In case you closed the **terminal emulator** from the previous objective, you'll need to recreate the convenience alias:
 
@@ -31,9 +31,9 @@ In this objective, you will take a logical backup of a single table with `mysqld
    CREATE DATABASE IF NOT EXISTS demo;
    USE demo;
    CREATE TABLE IF NOT EXISTS course_notes (
-   id INT AUTO_INCREMENT PRIMARY KEY,
-   note VARCHAR(255) NOT NULL,
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     note VARCHAR(255) NOT NULL,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
    );
    INSERT INTO course_notes (note) VALUES
    ('Hello from MySQL'),
