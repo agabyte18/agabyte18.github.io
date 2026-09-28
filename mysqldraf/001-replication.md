@@ -1,6 +1,6 @@
 # Objective: Configure replication for HA and execute a manual failover
 
-In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, simulate an outage, manually fail over to the replica, and then bring back the old primary instance as a replica of the new primary. Follow each step in order. Most steps give you a single command to run.
+In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, cut the replica off from the source just before an outage, manually fail over to the replica, and then deal with the fallout: the old primary holds a transaction the new primary never received. You'll detect that errant transaction, resynchronize the old primary, and bring it back as a replica of the new primary. Follow each step in order. Most steps give you a single command to run.
 
 1. Click **Open Environment** once available to access the lab environment.
 
@@ -214,15 +214,39 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     A value of `0` for `Seconds_Behind_Source` indicates that your replica database is fully caught up and synchronized with the primary (source) database. If you see a small nonzero number, the replica is still applying the rows you just wrote. Run the command again after a moment.
 
-22. Simulate a real outage on the source:
+22. Cut the replica off from the source:
+
+    ```
+    mysql --socket=/var/lib/mysql-replica/mysql.sock -e "STOP REPLICA IO_THREAD;"
+    ```
+
+    Real outages are rarely tidy. A network blip, a saturated link, or plain replication lag often means the replica stops receiving changes a little before the source actually dies. Stopping the replica's I/O thread, the thread that pulls changes from the source, is a safe way to simulate that on a single host. The source keeps running and accepting writes, but nothing it writes from now on reaches the replica.
+
+23. Write a row to the source that the replica will never receive:
+
+    ```
+    mysql -e "INSERT INTO demo.course_notes (note) VALUES ('Written to the source AFTER the replica lost contact');"
+    ```
+
+    From the application's point of view, this write succeeded: the source committed it and gave it a GTID. But the replica is no longer listening, so this transaction exists only on `mysql-source`.
+
+24. Confirm that the replica missed the new row:
+
+    ```
+    mysql --socket=/var/lib/mysql-replica/mysql.sock -e "SELECT COUNT(*) AS rows_on_replica FROM demo.course_notes;"
+    ```
+
+    The replica still has only the `3` seed rows, while the source has `4`. Remember this missing row. It's about to become a problem.
+
+25. Simulate a real outage on the source:
 
     ```
     sudo systemctl stop mysql
     ```
 
-    Instead of just pretending the source is gone, this command actually takes it down. A real failure would be less polite than a clean shutdown, but from the replica's point of view the result is the same: its source is unreachable. This means the failover you perform next will be away from a genuinely unreachable node.
+    Instead of just pretending the source is gone, this command actually takes it down. A real failure would be less polite than a clean shutdown, but the effect is the same: the source is unreachable, and it takes its unreplicated row down with it. This means the failover you perform next will be away from a genuinely unreachable node.
 
-23. Confirm the source is no longer running:
+26. Confirm the source is no longer running:
 
     ```
     systemctl is-active mysql
@@ -230,7 +254,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     `inactive` confirms that any processes attempting to write to the primary instance will be out of luck. It's time to fail over.
 
-24. Promote the replica to a standalone, writable primary:
+27. Promote the replica to a standalone, writable primary:
 
     ```
     mysql --socket=/var/lib/mysql-replica/mysql.sock <<'SQL'
@@ -241,9 +265,9 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     SQL
     ```
 
-    Failing over by hand means telling the replica to stop trying to be a replica and start acting as a standalone, writable primary. You've now stopped replication on the replica, cleared its replication configuration entirely, and turned off read-only mode so that the server will accept direct writes. Turning off `read_only` also turns off `super_read_only`, the reverse of step 17; setting both explicitly just makes the intent clear.
+    Failing over by hand means telling the replica to stop trying to be a replica and start acting as a standalone, writable primary. You've now stopped replication on the replica, cleared its replication configuration entirely, and turned off read-only mode so that the server will accept direct writes. Turning off `read_only` also turns off `super_read_only`, the reverse of step 17; setting both explicitly just makes the intent clear. With the source down, you have no way to fetch the row from step 23, so the new primary goes live without it.
 
-25. Verify that read-only mode is off:
+28. Verify that read-only mode is off:
 
     ```
     mysql --socket=/var/lib/mysql-replica/mysql.sock \
@@ -252,7 +276,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     A value of `0` for both fields confirms that read-only mode is now turned off for the new primary.
 
-26. Write new data directly to the promoted primary:
+29. Write new data directly to the promoted primary:
 
     ```
     mysql --socket=/var/lib/mysql-replica/mysql.sock \
@@ -261,15 +285,24 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     This is the real test of your failover: inserting a row directly into what used to be a read-only replica. Before promotion, this move would have been rejected.
 
-27. Bring the old primary back online:
+30. Bring the old primary back online:
 
     ```
     sudo systemctl start mysql
     ```
 
-    For a satisfying ending, you've brought back the original source so you can turn it into a replica of your new primary. Stopping a service doesn't touch its data, so the old primary's data directory in `/var/lib/mysql` is intact and ready to restart.
+    For a satisfying ending, you've brought back the original source so you can turn it into a replica of your new primary. Stopping a service doesn't touch its data, so the old primary's data directory in `/var/lib/mysql` is intact, including the row from step 23.
 
-28. Take a fresh snapshot of the demo database from the new primary:
+31. Look for errant transactions on the old primary:
+
+    ```
+    NEW_PRIMARY_GTIDS=$(mysql --socket=/var/lib/mysql-replica/mysql.sock -N -e "SELECT @@gtid_executed;")
+    mysql -e "SELECT GTID_SUBTRACT(@@gtid_executed, '$NEW_PRIMARY_GTIDS') AS errant_transactions;"
+    ```
+
+    Before any server can safely replicate from a new source, everything it has already executed must also exist on that source. The first line captures the new primary's GTID set in a shell variable. The second line asks the old primary which of its own transactions are missing from that set. The result is a single GTID ending in the old primary's server UUID: the row you wrote in step 23. A transaction like this, present on a replica but not on its source, is called an _errant transaction_. If this result were empty, you could simply point the old primary at the new one. Because it isn't, the two servers' histories have diverged, and the old primary's data can't be trusted as-is.
+
+32. Take a fresh snapshot of the demo database from the new primary:
 
     ```
     sudo mysqldump --socket=/var/lib/mysql-replica/mysql.sock \
@@ -277,9 +310,9 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
       > /tmp/mysql-repl-demo-resync.sql
     ```
 
-    Because you promoted the replica while the old primary was down, their GTID histories have diverged, so you can't just point the old primary at the new one and expect it to pick up where it left off. This is why you've just taken a consistent `mysqldump` of the `demo` database from the new primary, `mysql-replica`, with `--set-gtid-purged=ON` so that the dump carries the GTID position it needs to resume correctly. `mysqldump` warns that a partial dump includes the GTIDs of all transactions. That's exactly what you want here, so you can ignore the warning.
+    The fix for an errant transaction is to throw away the old primary's divergent state and rebuild it from the new primary, which is now the single source of truth. That's why you've just taken a consistent `mysqldump` of the `demo` database from the new primary, `mysql-replica`, with `--set-gtid-purged=ON` so that the dump carries the GTID position it needs to resume correctly. `mysqldump` warns that a partial dump includes the GTIDs of all transactions. That's exactly what you want here, so you can ignore the warning.
 
-29. Wipe the old primary's replication and GTID history:
+33. Wipe the old primary's replication and GTID history:
 
     ```
     mysql <<'SQL'
@@ -289,17 +322,17 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     SQL
     ```
 
-    `mysql-source`'s entire GTID history will no longer apply once you reload it from a fresh snapshot of the new primary. That's why you've just cleared it. `mysql-source` was never a replica, so `STOP REPLICA` and `RESET REPLICA ALL` have nothing to undo here; they're a defensive reset that guarantees a clean slate before you configure replication. In MySQL 8.0, `RESET MASTER` is the statement that deletes the binary logs and empties the GTID history.
+    `mysql-source`'s entire GTID history, including the errant transaction, will no longer apply once you reload it from a fresh snapshot of the new primary. That's why you've just cleared it. `mysql-source` was never a replica, so `STOP REPLICA` and `RESET REPLICA ALL` have nothing to undo here; they're a defensive reset that guarantees a clean slate before you configure replication. In MySQL 8.0, `RESET MASTER` is the statement that deletes the binary logs and empties the GTID history.
 
-30. Load the fresh snapshot into the old primary:
+34. Load the fresh snapshot into the old primary:
 
     ```
     mysql < /tmp/mysql-repl-demo-resync.sql
     ```
 
-    This command restores the dump you took from `mysql-replica` onto `mysql-source`, giving it both the current data and the correct GTID position from which to resume replication.
+    This command restores the dump you took from `mysql-replica` onto `mysql-source`, giving it both the current data and the correct GTID position from which to resume replication. The dump replaces the `course_notes` table, so the errant row from step 23 is gone. In production, you'd first copy any rows like it somewhere safe and decide whether to re-apply them on the new primary. Discarding them silently is data loss.
 
-31. Point the old primary at the new primary and start replication:
+35. Point the old primary at the new primary and start replication:
 
     ```
     mysql <<'SQL'
@@ -316,7 +349,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     This command configures `mysql-source` the same way you configured the original replica back in step 17. This time, though, the topology has reversed: the old primary is now the replica, pulling from port 3307. The `repl` user already exists on `mysql-replica` because it replicated there when you created it in step 16.
 
-32. Verify the rejoined node's replication threads are running:
+36. Verify the rejoined node's replication threads are running:
 
     ```
     mysql -e "SHOW REPLICA STATUS\G" \
@@ -325,26 +358,27 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     A value of `Yes` on both running-state fields confirms that the old primary, `mysql-source`, has successfully rejoined the topology as a replica of `mysql-replica`. As before, if `Replica_IO_Running` says `Connecting`, give it a few seconds and check again.
 
-33. Write a new row to the new primary:
+37. Write a new row to the new primary:
 
     ```
     mysql --socket=/var/lib/mysql-replica/mysql.sock \
       -e "INSERT INTO demo.course_notes (note) VALUES ('Full Circle - rEpLiCaTiOn ReVeRsEd.');"
     ```
 
-34. Confirm that the new row was replicated to the old primary:
+38. Confirm that the new row was replicated to the old primary:
 
     ```
     mysql -e "SELECT * FROM demo.course_notes;"
     ```
 
-    WONDERFUL! You can see the new row on the old primary (new replica).
+    WONDERFUL! You can see the new row on the old primary (new replica). Notice what's missing: the row from step 23 is nowhere to be found, and both servers now agree on exactly the same data. That row had `id` 4 on the old primary, the same `id` the new primary gave to the row you wrote in step 29. Two different rows claimed the same key, which is why a diverged server can't simply be merged back in.
 
-35. Shut down the replica instance, remove everything the lab added, and return the source to its original configuration:
+39. Shut down the replica instance, remove everything the lab added, and return the source to its original configuration:
 
     ```
-    sudo mysqladmin --socket=/var/lib/mysql-replica/mysql.sock shutdown \
-      && mysql -e "STOP REPLICA; RESET REPLICA ALL; DROP DATABASE demo; DROP USER 'repl'@'%'; RESET MASTER;" \
+    mysql -e "STOP REPLICA;" \
+      && sudo mysqladmin --socket=/var/lib/mysql-replica/mysql.sock shutdown \
+      && mysql -e "RESET REPLICA ALL; DROP DATABASE demo; DROP USER 'repl'@'%'; RESET MASTER;" \
       && sudo rm -rf /var/lib/mysql-replica /var/log/mysql/replica-error.log /etc/mysql/replica.cnf \
            /etc/mysql/mysql.conf.d/replication.cnf /tmp/mysql-repl-demo-resync.sql \
       && sudo sed -i '/mysql-replica/d' /etc/apparmor.d/local/usr.sbin.mysqld \
@@ -353,5 +387,6 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
       && sudo sh -c 'rm -f /var/lib/mysql/mysql-bin.* /var/lib/mysql/*-relay-bin.*'
     ```
 
-In this objective, you started with a healthy source/replica pair, simulated an outage, and finished up with a manual failover that reversed your initial topology. In the next objective, you'll learn to recover from a disaster using a physical backup and recovery strategy.
+    Replication on `mysql-source` is stopped first so that it doesn't log connection errors when its source, `mysql-replica`, shuts down.
 
+In this objective, you started with a healthy source/replica pair, lost a transaction to a badly timed outage, and performed a manual failover that reversed your initial topology. Along the way, you learned to detect an errant transaction with GTIDs and to resynchronize a diverged server from the new primary. In the next objective, you'll learn to recover from a disaster using a physical backup and recovery strategy.
