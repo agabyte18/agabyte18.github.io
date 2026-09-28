@@ -1,6 +1,6 @@
 # Objective: Backup and Restore from a Physical Backup
 
-In this objective, you'll take a hot physical backup of the host's entire MySQL 8.0 server using the industry-standard Percona XtraBackup 8.0. You'll then proceed to destroy the server's entire data directory. Finally, you'll rebuild the whole server from backup. Follow each step in order. Each step gives you exactly one command to run.
+In this objective, you'll take a hot physical backup of the host's entire MySQL 8.0 server using the industry-standard Percona XtraBackup 8.0. You'll then proceed to destroy the server's entire data directory. Finally, you'll rebuild the whole server from backup. Follow each step in order. Most of the steps give you a single command to run.
 
 1. In case you closed the **terminal emulator** from the previous objective, you'll need to recreate the convenience alias:
 
@@ -24,7 +24,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
    sudo install -d -m 700 /backups
    ```
 
-   Storing backups near live data is a recipe for disaster. A backup stored next to the data it protects will die with that data in the event of a catastrophe. Keeping backups outside the data directory ensures they survive the disaster you're about to cause. On a real server, `/backups` would be a different disk, or better yet a different machine. Mode `700` keeps everyone but `root` out, because a backup holds every row and every account on the server.
+   Storing backups near live data is a recipe for disaster. A backup stored next to the data it protects will die with that data in the event of a catastrophe. Keeping backups outside the data directory ensures your backups will survive the disaster you're about to cause. On a real server, `/backups` would be on a different disk, or better yet, on a different machine. Mode `700` keeps everyone but `root` out, because a backup holds every row and every account on the server.
 
 4. Create the demo database, table, and seed rows:
 
@@ -33,9 +33,9 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
    CREATE DATABASE IF NOT EXISTS demo;
    USE demo;
    CREATE TABLE IF NOT EXISTS course_notes (
-   id INT AUTO_INCREMENT PRIMARY KEY,
-   note VARCHAR(255) NOT NULL,
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     note VARCHAR(255) NOT NULL,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
    );
    INSERT INTO course_notes (note) VALUES
    ('Hello from MySQL'),
@@ -60,7 +60,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
    sudo xtrabackup --backup --target-dir=/backups/full
    ```
 
-   XtraBackup copies the InnoDB files at the file level while the server keeps running (a hot backup). It connects to the server through the local socket only to coordinate a brief backup lock and record the binary log position. `sudo` does double work here. The data files belong to the `mysql` user, so reading them requires `root`. Also, because XtraBackup runs as the operating system's `root` user, `auth_socket` logs it in as MySQL `root` with no password. When you see `completed OK!`, the backup is in `/backups/full`. You can safely ignore the `Allocated tablespace ID 1 for sys/sys_config` warning that appears along the way.
+   XtraBackup copies the InnoDB files at the file level while the server keeps running (a hot backup). It connects to the server through the local socket only to coordinate a brief backup lock and record the binary log position. `sudo` does double work here. The data files belong to the `mysql` user, so reading them requires `root`. Also, because XtraBackup runs as the operating system's `root` user, `auth_socket` logs it in as MySQL `root` with no password. When you see `completed OK!`, the backup is in `/backups/full`. You can safely ignore any `Allocated tablespace ID ... old maximum was 0` warnings that appear along the way.
 
 7. Inspect what the backup contains:
 
@@ -84,7 +84,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
    sudo systemctl stop mysql
    ```
 
-   In the previous objective, you stopped the server and brought it back with its data intact. Not this time. The server is down, and the next step makes sure its data never comes back.
+   In the previous objective, you stopped the server and brought it back with its data intact. Not this time though. This time, the server is down, and the next step makes sure its data never comes back.
 
 10. Destroy the data directory:
 
@@ -92,7 +92,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
     sudo rm -rf /var/lib/mysql
     ```
 
-    And now the data is gone too. Every data file, every binary and redo log, and the data dictionary itself have been wiped out. Without a backup, this is a very bad day. I've seen at least one DBA fired for this in real life.
+    And now the data is gone too. Every data file, every binary and redo log, and the data dictionary itself have been wiped out. Without a backup, this is a very bad day. DBAs have lost their jobs over this in real life.
 
 11. Confirm that only the backup is left:
 
@@ -108,7 +108,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
     sudo xtrabackup --prepare --target-dir=/backups/full
     ```
 
-    Because the server kept running while its files were being copied, the raw backup is not yet consistent. The prepare phase replays the redo log that XtraBackup captured during the backup and rolls back any uncommitted transactions, leaving a data directory that MySQL can start from cleanly. Again, look for `completed OK!`, and ignore the same `sys/sys_config` warning you saw during the backup.
+    Because the server kept running while its files were being copied, the raw backup is not yet consistent. The prepare phase replays the redo log that XtraBackup captured during the backup and rolls back any uncommitted transactions, leaving a data directory that MySQL can start from cleanly. Again, look for `completed OK!`, and ignore any `Allocated tablespace ID` warnings, just as you did during the backup.
 
 13. Create a fresh, empty data directory:
 
@@ -132,7 +132,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
     sudo chown -R mysql:mysql /var/lib/mysql
     ```
 
-    The copy-back ran as `root`, so every restored file is owned by `root`. The MySQL server runs as the `mysql` user and can't read those files, so it would refuse to start. Fixing ownership after every copy-back is the habit to keep.
+    The copy-back ran as `root`, so every restored file is owned by `root`. The MySQL server runs as the `mysql` user and can't read those files, so it would refuse to start. Fixing ownership after every copy-back is a best practice.
 
 16. Start the MySQL server on the restored data:
 
@@ -140,7 +140,7 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
     sudo systemctl start mysql
     ```
 
-    This is the same service you stopped in step 9, now starting on a data directory rebuilt from the backup. You don't need a separate wait step. Ubuntu's `mysql` service tells systemd when the server is ready for connections, so `systemctl start` does not return your prompt until then.
+    This is the same service you stopped in step 9, now starting on a data directory rebuilt from the backup. You do not need a separate wait step. Ubuntu's `mysql` service tells systemd when the server is ready for connections, so `systemctl start` does not return your prompt until then.
 
 17. Confirm that your data survived the disaster:
 
@@ -156,5 +156,4 @@ In this objective, you'll take a hot physical backup of the host's entire MySQL 
     mysql -e "DROP DATABASE demo;" && sudo rm -rf /backups /var/lib/mysql/xtrabackup_info
     ```
 
-In this objective, you took a hot physical backup of an entire MySQL instance, destroyed its data directory, and rebuilt the server from the backup. You also saw the limitation of a backup on its own. Everything written after the backup was lost. In the next objective, you'll close that gap with point-in-time recovery.
-
+In this objective, you took a hot physical backup of an entire MySQL instance, destroyed its data directory, and rebuilt the server from the backup. You also saw the limitation of a backup on its own. Everything written after the backup was lost. In the next objective, you'll close that gap using point-in-time recovery.
