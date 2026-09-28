@@ -1,6 +1,6 @@
 # Objective: Configure replication for HA and execute a manual failover
 
-In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, cut the replica off from the source just before an outage, manually fail over to the replica, and then deal with the fallout: the old primary holds a transaction the new primary never received. You'll detect that errant transaction, resynchronize the old primary, and bring it back as a replica of the new primary. Follow each step in order. Most steps give you a single command to run.
+In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, cut the replica off from the source just before an outage, manually fail over to the replica, and then deal with the fallout: the old primary holds a transaction the new primary never received. You'll detect that errant transaction, resynchronize the old primary, and bring it back as a replica of the new primary. Follow each step in order. Most of the steps give you a single command to run.
 
 1. Click **Open Environment** once available to access the lab environment.
 
@@ -203,7 +203,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     mysql --socket=/var/lib/mysql-replica/mysql.sock -e "SELECT * FROM demo.course_notes;"
     ```
 
-    Et voilà! Replication is doing its job. Your configuration works as expected.
+    Et voila! Replication is doing its job. Your configuration works as expected.
 
 21. Confirm the replica is fully caught up:
 
@@ -300,7 +300,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     mysql -e "SELECT GTID_SUBTRACT(@@gtid_executed, '$NEW_PRIMARY_GTIDS') AS errant_transactions;"
     ```
 
-    Before any server can safely replicate from a new source, everything it has already executed must also exist on that source. The first line captures the new primary's GTID set in a shell variable. The second line asks the old primary which of its own transactions are missing from that set. The result is a single GTID ending in the old primary's server UUID: the row you wrote in step 23. A transaction like this, present on a replica but not on its source, is called an _errant transaction_. If this result were empty, you could simply point the old primary at the new one. Because it isn't, the two servers' histories have diverged, and the old primary's data can't be trusted as-is.
+    Before any server can safely replicate from a new source, everything it has already executed must also exist on that source. The first line captures the new primary's GTID set in a shell variable. The second line asks the old primary which of its own transactions are missing from that set. The result is a single GTID ending in the old primary's server UUID: the row you wrote in step 23. A transaction like this, present on a replica but not on its source, is called an _errant transaction_. If this result were empty, you could simply point the old primary at the new one. Because it isn't, the two servers' histories have diverged, and the old primary's data can not be trusted.
 
 32. Take a fresh snapshot of the demo database from the new primary:
 
@@ -373,7 +373,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
 
     WONDERFUL! You can see the new row on the old primary (new replica). Notice what's missing: the row from step 23 is nowhere to be found, and both servers now agree on exactly the same data. That row had `id` 4 on the old primary, the same `id` the new primary gave to the row you wrote in step 29. Two different rows claimed the same key, which is why a diverged server can't simply be merged back in.
 
-39. Shut down the replica instance, remove everything the lab added, and return the source to its original configuration:
+39. Shut down the replica instance, remove all the artifacts of this objective, and return the source to its original configuration:
 
     ```
     mysql -e "STOP REPLICA;" \
