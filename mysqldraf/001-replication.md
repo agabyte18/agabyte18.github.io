@@ -300,7 +300,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     mysql -e "SELECT GTID_SUBTRACT(@@gtid_executed, '$NEW_PRIMARY_GTIDS') AS errant_transactions;"
     ```
 
-    Before any server can safely replicate from a new source, everything it has already executed must also exist on that source. The first line captures the new primary's GTID set in a shell variable. The second line asks the old primary which of its own transactions are missing from that set. The result is a single GTID ending in the old primary's server UUID: the row you wrote in step 23. A transaction like this, present on a replica but not on its source, is called an _errant transaction_. If this result were empty, you could simply point the old primary at the new one. Because it isn't, the two servers' histories have diverged, and the old primary's data can not be trusted.
+    Before any server can safely replicate from a new source, everything it has already executed must also exist on that source. The first line captures the new primary's GTID set in a shell variable. The second line asks the old primary which of its own transactions are missing from that set. The result is a single GTID ending in the old primary's server UUID: the row you wrote in step 23. A transaction like this, present on a replica but not on its source, is called an _errant transaction_. If this result were empty, you could simply point the old primary at the new one. Because it is not, the two servers' histories have diverged, and the old primary's data can not be trusted.
 
 32. Take a fresh snapshot of the demo database from the new primary:
 
