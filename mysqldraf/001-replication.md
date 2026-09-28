@@ -1,6 +1,6 @@
 # Objective: Configure replication for HA and execute a manual failover
 
-In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, simulate an outage, manually fail over to the replica, and then bring back the old primary instance as a replica of the new primary. Follow each step in order. Each step gives you exactly one command to run.
+In this objective, you will build a two-node MySQL 8.0 replication pair from scratch on a single Ubuntu host, using the default MySQL server install, plus a second instance you'll create by hand. You'll prove that your configuration works, simulate an outage, manually fail over to the replica, and then bring back the old primary instance as a replica of the new primary. Follow each step in order. Most steps give you a single command to run.
 
 1. Click **Open Environment** once available to access the lab environment.
 
@@ -12,7 +12,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
    sudo systemctl status mysql --no-pager
    ```
 
-   Look for `active (running)`. This packaged server, managed by systemd, is your source instance. Throughout this objective, your source instance will be referred to as `mysql-source`. It stores its data in `/var/lib/mysql` and listens on port 3306. Like every Ubuntu MySQL install, its `root` account uses the `auth_socket` plugin, so running the `mysql` client as the operating system's `root` user logs you in as MySQL `root` without a password. The operating system has already verified your identity.
+   Look for `active (running)`. This packaged server, managed by systemd, is your source instance. Throughout this objective, your source instance will be referred to as `mysql-source`. It stores its data in `/var/lib/mysql` and listens on port 3306. As in a default Ubuntu MySQL install, its `root` account uses the `auth_socket` plugin, so running the `mysql` client as the operating system's `root` user logs you in as MySQL `root` without a password. The operating system has already verified your identity.
 
 4. Create a convenience alias:
 
@@ -184,9 +184,9 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     CREATE DATABASE IF NOT EXISTS demo;
     USE demo;
     CREATE TABLE IF NOT EXISTS course_notes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    note VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      note VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     INSERT INTO course_notes (note) VALUES
     ('hello from the source'),
@@ -203,7 +203,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     mysql --socket=/var/lib/mysql-replica/mysql.sock -e "SELECT * FROM demo.course_notes;"
     ```
 
-    Et voila! Replication is doing its job. Your configuration works as expected.
+    Et voilà! Replication is doing its job. Your configuration works as expected.
 
 21. Confirm the replica is fully caught up:
 
@@ -220,7 +220,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     sudo systemctl stop mysql
     ```
 
-    Instead of just pretending the source is gone, this command actually takes it down. A real failure would be less polite than a clean shutdown, but from the replica's point of view the result is the same: its source is unreachable. This means the failover you perform next will be against a genuinely unreachable node.
+    Instead of just pretending the source is gone, this command actually takes it down. A real failure would be less polite than a clean shutdown, but from the replica's point of view the result is the same: its source is unreachable. This means the failover you perform next will be away from a genuinely unreachable node.
 
 23. Confirm the source is no longer running:
 
@@ -241,7 +241,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     SQL
     ```
 
-    Failing over by hand means telling the replica to stop trying to be a replica and start acting as a standalone, writable primary. You've now stopped replication on the replica, cleared its replication configuration entirely, and turned off read-only mode so that the server will accept direct writes.
+    Failing over by hand means telling the replica to stop trying to be a replica and start acting as a standalone, writable primary. You've now stopped replication on the replica, cleared its replication configuration entirely, and turned off read-only mode so that the server will accept direct writes. Turning off `read_only` also turns off `super_read_only`, the reverse of step 17; setting both explicitly just makes the intent clear.
 
 25. Verify that read-only mode is off:
 
@@ -289,7 +289,7 @@ In this objective, you will build a two-node MySQL 8.0 replication pair from scr
     SQL
     ```
 
-    `mysql-source`'s old replication configuration and its entire GTID history will no longer apply once you reload it from a fresh snapshot of the new primary. That's why you've just cleared them. In MySQL 8.0, `RESET MASTER` is the statement that deletes the binary logs and empties the GTID history.
+    `mysql-source`'s entire GTID history will no longer apply once you reload it from a fresh snapshot of the new primary. That's why you've just cleared it. `mysql-source` was never a replica, so `STOP REPLICA` and `RESET REPLICA ALL` have nothing to undo here; they're a defensive reset that guarantees a clean slate before you configure replication. In MySQL 8.0, `RESET MASTER` is the statement that deletes the binary logs and empties the GTID history.
 
 30. Load the fresh snapshot into the old primary:
 
