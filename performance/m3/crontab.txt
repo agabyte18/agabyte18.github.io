@@ -1,0 +1,6 @@
+# minute hour day-of-month month day-of-week  command
+# Lab timing: the health check every minute and the maintenance every 2 minutes, so you can watch them run.
+# Production timing would be  */5 * * * *  for the health check and  0 3 * * 0  (Sunday, 03:00) for maintenance.
+# (date; …) puts a time stamp above each run's output in the log.
+* * * * *    (date; bash $HOME/m1/health-alert.sh) >> $HOME/health-alert.log 2>&1
+*/2 * * * *  (date; bash $HOME/m3/maintenance.sh) >> $HOME/maintenance.log 2>&1

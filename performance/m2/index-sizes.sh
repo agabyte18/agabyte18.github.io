@@ -1,0 +1,1 @@
+mysql --login-path=dba -e "SELECT index_name, ROUND(stat_value * @@innodb_page_size / 1024 / 1024, 1) AS size_mb FROM mysql.innodb_index_stats WHERE database_name = 'employees' AND table_name = 'employees' AND stat_name = 'size'"

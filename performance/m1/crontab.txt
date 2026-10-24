@@ -1,0 +1,5 @@
+# minute hour day-of-month month day-of-week  command
+# Lab timing: every minute, so you can watch it run.
+# Production timing would be  */5 * * * *  (every 5 minutes).
+# (date; …) puts a time stamp above each run's output in the log.
+* * * * *  (date; bash $HOME/m1/health-alert.sh) >> $HOME/health-alert.log 2>&1
