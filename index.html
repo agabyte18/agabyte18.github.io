@@ -1,52 +1,126 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
+    <title>MySQL Performance Monitoring, Troubleshooting, and Automated Maintenance</title>
+    <meta name="description" content="Course files and scripts for MySQL Performance Monitoring, Troubleshooting, and Automated Maintenance, by Philip Agaba.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Passion+One&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sniglet&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+
     <link rel="icon" type="image/png" href="favicon-lg.png">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-
-    <title>Github Pages - Agabyte</title>
-    
     <style>
-    	body { background: #000; font-family: "Sniglet", cursive; }
-    	h1 { font-size: 5em; color: #fff; margin-top: 500px; }
-    	span { font-size: 2em; color: #ccc; }
-    	a { text-decoration: none; }
+      :root {
+        --ink: #130F25;
+        --pink: #FF1675;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { margin: 0; min-height: 100%; }
+
+      body {
+        min-height: 100vh;
+        background-color: #fff;
+        background-image: radial-gradient(rgba(19, 15, 37, 0.05) 2px, transparent 2.5px);
+        background-size: 28px 28px;
+        color: var(--ink);
+        font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Pink half circles in the bottom corners, like the title slide */
+      body::before,
+      body::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: clamp(90px, 11vw, 210px);
+        height: clamp(90px, 11vw, 210px);
+        background: var(--pink);
+        z-index: 0;
+      }
+      body::before { left: 0; border-radius: 0 100% 0 0; }
+      body::after  { right: 0; border-radius: 100% 0 0 0; }
+
+      main {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        padding: clamp(24px, 6vw, 110px);
+        padding-bottom: clamp(120px, 14vw, 240px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 48px;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 22ch;
+        font-size: clamp(2.1rem, 5.2vw, 4.8rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.01em;
+      }
+
+      .subtitle {
+        margin: 0.7em 0 0;
+        font-size: clamp(1.3rem, 3.2vw, 2.7rem);
+        font-weight: 600;
+      }
+
+      .author {
+        display: flex;
+        align-items: center;
+        gap: clamp(16px, 2.6vw, 48px);
+      }
+
+      .author img {
+        width: clamp(84px, 11vw, 210px);
+        height: clamp(84px, 11vw, 210px);
+        border-radius: 50%;
+        object-fit: cover;
+        flex: none;
+      }
+
+      .name { margin: 0; font-size: clamp(1.2rem, 2.5vw, 2.4rem); font-weight: 800; }
+      .role { margin: 0.2em 0 0.9em; font-size: clamp(1rem, 1.8vw, 1.7rem); }
+
+      a { color: var(--ink); text-decoration: none; }
+      .site { font-size: clamp(0.95rem, 1.5vw, 1.4rem); }
+      .site:hover, .download:hover { color: var(--pink); }
+
+      .download {
+        display: inline-block;
+        margin-top: 1.4em;
+        font-weight: 600;
+        font-size: clamp(1rem, 1.6vw, 1.5rem);
+        border-bottom: 2px solid var(--pink);
+      }
     </style>
-    
   </head>
   <body>
-    <div class="container">
-    <div class="row">
-    	<div class="col-4 offset-4">
-    		<a href="https://agabyte.com">
-    			<h1>Agabyte.com</h1>
-    		
-    			<span>Learn to code for free</span>
-    		</a>
-    	</div>
-    </div>
-    </div>
+    <main>
+      <header>
+        <h1>MySQL Performance Monitoring, Troubleshooting, and Automated Maintenance</h1>
+        <p class="subtitle">Course files and scripts</p>
+        <a class="download" href="mysqlperf.tar.gz">Download all three modules (.tar.gz)</a>
+      </header>
 
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-eMNCOe7tC1doHpGoWe/6oMVemdAVTMs2xqW4mwXrXsW0L84Iytr2wi5v2QjrP/xp" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
-    -->
+      <section class="author">
+        <img src="author.png" alt="Philip Agaba">
+        <div>
+          <p class="name">Philip Agaba</p>
+          <p class="role">Senior Software Engineer</p>
+          <a class="site" href="https://agabyte.com">agabyte.com</a>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
